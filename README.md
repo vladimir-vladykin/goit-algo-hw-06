@@ -79,7 +79,7 @@ Start point is 'Перемога' station
 Starts of both DFS and BFS are the same, 'Перемога', 'Наукова', 'Держпром' and 'Архітектора Бекетова'.
 But next step is different for each algorithm. 
 
-In DFS we continue from 'Архітектора Бекетова' to 'Метробудівників', then to 'Спортивна' and further. We go consistently from one node to another, until we have next next not visited node. We go this way up to 'Київська'-'Студентська', and only then return to 'Спортивна' - 'Палац спорту', which is last step of our traverse.
+In DFS we continue from 'Архітектора Бекетова' to 'Метробудівників', then to 'Спортивна' and further. We go consistently from one node to another, until we have next not visited node. We go this way up to 'Київська'-'Студентська', and only then return to 'Спортивна' - 'Палац спорту', which is last step of our traverse.
 
 On the other hand, in BFS after 'Архітектора Бекетова' we do not go for 'Метробудівників', but instead turn to another neighbour of 'Держпром', which is 'Університет'. Then we go to next neighbour of 'Архітектора Бекетова' ('Метробудівників'), and next neighbours of 'Університет' ('Історичний музей' and 'Ярослава Мудрого'). 
 So here we have completly different strategy, compared to DFS, here we go level-by-level.
@@ -87,6 +87,7 @@ So here we have completly different strategy, compared to DFS, here we go level-
 
 ## 3. Shortest path search
 Calculated shortest path, based on Dijkstra algorith:
+
     {
         'Перемога': 0, 
         'Наукова': 10, 
