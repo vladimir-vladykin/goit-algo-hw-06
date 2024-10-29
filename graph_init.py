@@ -10,6 +10,7 @@ derzhprom = "Держпром"
 architect = "Архітектора\nБекетова"
 metro_bud = "Метробу-\nдівників"
 green_line = [peremoga, naukova, derzhprom, architect, metro_bud]
+green_travel_time_min = [10, 3, 5, 7]
 
 # blue line
 history_museum = "Історичний\nмузей"
@@ -19,6 +20,7 @@ kyiv = "Київська"
 akademic = "Академіка\nБалашова"
 student = "Студентська"
 blue_line = [history_museum, university, yaroslav, kyiv, student]
+blue_travel_time_min = [4, 2, 4, 9]
 
 # red line
 vokzal = "Вокзальна"
@@ -29,6 +31,7 @@ turbo_atom = "Турбоатом"
 palaz_sport = "Палац\nспорту"
 army = "Армійська"
 red_line = [vokzal, konst_maidan, levada, sport, palaz_sport]
+red_travel_time_min = [6, 3, 4, 6]
 
 # intersections of lines
 green_blue_intersection = [derzhprom, university]
@@ -53,15 +56,16 @@ def create_subway_graph():
     kharkiv_subway_stations_graph.add_nodes_from(blue_line)
     kharkiv_subway_stations_graph.add_nodes_from(red_line)
 
-    # add edges for each line
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(green_line))
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(blue_line))
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(red_line))
+    # add edges for each line, with travel time as weight
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(green_line, weights = green_travel_time_min))
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(blue_line, weights=blue_travel_time_min))
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(red_line, weights=red_travel_time_min))
 
     # add edges for line intersections
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(green_blue_intersection))
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(green_red_intersection))
-    kharkiv_subway_stations_graph.add_edges_from(array_to_pairs(blue_red_intersection))
+    # intersections always have travel_time = 1 minute
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(green_blue_intersection, weights = [1]))
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(green_red_intersection, weights = [1]))
+    kharkiv_subway_stations_graph.add_weighted_edges_from(array_to_pairs(blue_red_intersection, weights = [1]))
 
     return kharkiv_subway_stations_graph
 
@@ -83,7 +87,7 @@ def display_key_graph_info(graph: nx.Graph):
 
 def render_graph(graph):
     # do this to get stable rendering of graph (instead of random each time)
-    np.random.seed(42)
+    np.random.seed(43)
 
     # prepare colors for rendering
     node_colors = []
@@ -93,14 +97,18 @@ def render_graph(graph):
         if node in red_line: node_colors.append("red")
 
     # display graph
-    plt.figure(3, figsize=(16,13)) 
-    nx.draw_spring(graph, with_labels=True, node_size = 6500, node_color=node_colors)
+    plt.figure(3, figsize=(17, 13)) 
+    pos = nx.spring_layout(graph, k = 0.7)
+    nx.draw(graph, pos, with_labels=True, node_size = 3000, node_color=node_colors, font_size = 8, width = 2)
+    labels = nx.get_edge_attributes(graph, 'weight')
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels=labels, font_size = 8)
     plt.show()
 
 
 # turn arrays like '[1, 2, 3, 4]' into array of pair tuples,
-# like [(1, 2), (2, 3), (3, 4)]
-def array_to_pairs(array: list) -> list:
+# like [(1, 2), (2, 3), (3, 4)].
+# in case when weights presented, adds it as third element of each tuple
+def array_to_pairs(array: list, weights: list = None) -> list:
     if len(array) <= 1:
         # impossible to build arrays of pairs
         return []
@@ -109,7 +117,11 @@ def array_to_pairs(array: list) -> list:
     for i in range(1, len(array)):
         first = array[i - 1]
         second = array[i]
-        result.append((first, second))
+
+        if weights is not None:
+            result.append((first, second, weights[i - 1]))
+        else:
+            result.append((first, second))
 
     return result
 
